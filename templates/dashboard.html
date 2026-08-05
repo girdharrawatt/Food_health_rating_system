@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Food Health Rating</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dashboard-body">
+    <main class="dashboard-shell">
+        <section class="dashboard-welcome">
+            <div class="welcome-copy">
+                <h1>Welcome back, {{ user.name }}</h1>
+                <p>Your nutritional journey is looking positive. Ready to check your next meal's health rating?</p>
+                <div class="welcome-actions">
+                    <a class="welcome-primary" href="{{ url_for('index') }}#analyzer">Scan Product</a>
+                    <a class="welcome-secondary" href="{{ url_for('profile') }}">Edit Profile</a>
+                </div>
+            </div>
+        </section>
+
+        {% for message in get_flashed_messages() %}
+            <p class="success-message">{{ message }}</p>
+        {% endfor %}
+
+        <section class="dashboard-layout">
+            <div class="dashboard-main">
+                <div class="dashboard-card-grid">
+                    <article class="dash-card">
+                        <div class="dash-card-head">
+                            <h2>Health Conditions</h2>
+                            <span class="dash-icon">+</span>
+                        </div>
+                        <p>Monitoring active conditions to provide tailored alerts.</p>
+                        <ul class="dash-pill-list">
+                            {% for condition in user.health_conditions %}
+                                <li class="danger-pill">{{ condition.title() }}</li>
+                            {% else %}
+                                <li class="soft-pill">No conditions selected</li>
+                            {% endfor %}
+                            <li><a class="soft-pill" href="{{ url_for('profile') }}">+ Add New</a></li>
+                        </ul>
+                    </article>
+
+                    <article class="dash-card">
+                        <div class="dash-card-head">
+                            <h2>Saved Scans</h2>
+                            <span class="dash-icon">#</span>
+                        </div>
+                        <p><strong class="dash-number">{{ scan_count }}</strong> Items saved</p>
+                        <a class="dash-link" href="{{ url_for('history') }}">View all history -></a>
+                    </article>
+                </div>
+
+                <section class="latest-activity">
+                    <div class="section-row">
+                        <h2>Latest Activity</h2>
+                        <a href="{{ url_for('history') }}">Past Scans</a>
+                    </div>
+
+                    {% if records %}
+                        {% for record in records %}
+                            <article class="result-card history-card dashboard-history-card">
+                                <div>
+                                    <p class="section-label">{{ record.created_at }}</p>
+                                    <h2>{{ record.product_name or "Unnamed product" }}</h2>
+                                    <p class="hero-text">{{ record.personalized_advice or "No personalized advice saved." }}</p>
+                                    {% if record.snack_recommendations %}
+                                        <div class="mini-snack-row">
+                                            <span>Better snack:</span>
+                                            <strong>{{ record.snack_recommendations[0].snack_name }}</strong>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="history-score">
+                                    <span class="classification-badge {{ (record.classification or 'Moderate').lower() }}">{{ record.classification or "Moderate" }}</span>
+                                    <strong>{{ record.score if record.score is not none else "--" }}</strong>
+                                    <a class="secondary-button" href="{{ url_for('history_detail', scan_id=record.id) }}">Open</a>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    {% else %}
+                        <article class="result-card">
+                            <h2>No scans yet</h2>
+                            <p class="hero-text">Scan your first product and the saved report will appear here.</p>
+                        </article>
+                    {% endif %}
+                </section>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

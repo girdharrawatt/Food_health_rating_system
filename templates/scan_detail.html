@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Scan - Food Health Rating</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <nav class="app-nav">
+            <a class="brand-link" href="{{ url_for('dashboard') }}">Food Health Rating</a>
+            <div class="nav-links">
+                <a class="secondary-button" href="{{ url_for('history') }}">Past Scans</a>
+                <a class="primary-button nav-action" href="{{ url_for('index') }}#analyzer">Scan Another</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="page-shell">
+        <section class="scan-summary-card">
+            <div>
+                <p class="eyebrow">{{ record.created_at }}</p>
+                <h1>{{ record.product_name or "Saved food report" }}</h1>
+                <p class="hero-text">{{ result.personalized_advice }}</p>
+            </div>
+            <div class="scan-score-panel">
+                <span class="classification-badge {{ result.classification.lower() }}">{{ result.classification }}</span>
+                <strong>{{ result.score if result.score is not none else "--" }}</strong>
+                <span>{{ result.rating }}</span>
+            </div>
+        </section>
+
+        <section class="important-grid">
+            <article class="result-card important-card hazard-card">
+                <div class="card-heading">
+                    <h2>Hazard Ingredients</h2>
+                    <span class="muted-chip">Limit or avoid</span>
+                </div>
+                <ul class="ingredient-chip-list">
+                    {% for item in result.important_ingredients.hazards %}
+                        <li class="ingredient-chip hazard">
+                            {{ item.name }}
+                            {% if item.cautions %}<span>{{ item.cautions | join(", ") }}</span>{% else %}<span>score {{ item.score }}</span>{% endif %}
+                        </li>
+                    {% else %}
+                        <li class="ingredient-chip neutral">No major hazard ingredient detected</li>
+                    {% endfor %}
+                </ul>
+            </article>
+
+            <article class="result-card important-card good-card">
+                <div class="card-heading">
+                    <h2>Good Ingredients</h2>
+                    <span class="muted-chip">Positive signs</span>
+                </div>
+                <ul class="ingredient-chip-list">
+                    {% for item in result.important_ingredients.good %}
+                        <li class="ingredient-chip good">
+                            {{ item.name }} <span>score {{ item.score }}</span>
+                        </li>
+                    {% else %}
+                        <li class="ingredient-chip neutral">No strong positive ingredient detected</li>
+                    {% endfor %}
+                </ul>
+            </article>
+        </section>
+
+        <section class="score-grid">
+            <article class="result-card advice-card">
+                <p class="section-label">Personal Advice</p>
+                <p class="advice-text">{{ result.advice }}</p>
+                <p class="personalized-advice {{ result.recommendation_status }}">{{ result.personalized_advice }}</p>
+            </article>
+
+            <article class="result-card snack-card">
+                <div class="card-heading">
+                    <h2>Better Snacks For You</h2>
+                    <span class="muted-chip">Personalized</span>
+                </div>
+                <div class="snack-list">
+                    {% for snack in result.snack_recommendations %}
+                        <article class="snack-option">
+                            <h3>{{ snack.snack_name }}</h3>
+                            <p>{{ snack.reason }}</p>
+                            <div class="snack-tags">
+                                {% for tag in snack.tags %}
+                                    <span>{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </article>
+                    {% else %}
+                        <p class="hero-text">No better snack suggestions available for this scan yet.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
